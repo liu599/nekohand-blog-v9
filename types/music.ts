@@ -4,7 +4,11 @@ export interface Music {
   url: string;
   cover: string;
   album: string;
+  albumKey?: string;
   filetype: string;
+  fileNo?: number;
+  fileId?: string;
+  relativePath?: string;
   lrc?: string | null;
   audioList: Music[];
   issueDate?: string;
@@ -12,6 +16,9 @@ export interface Music {
 
 export interface Album {
   album: string;
+  albumKey?: string;
+  cover?: string;
+  issueDate?: string;
   audioList: Music[];
 }
 
@@ -32,6 +39,7 @@ export interface MusicState {
   playlist: Music[];
   // Actions
   setMusicData: (musicData: Music[]) => void;
+  setCurrentMusic: (music: Music, index: number) => void;
   playMusic: (music: Music, index: number) => void;
   pauseMusic: () => void;
   togglePlay: () => void;

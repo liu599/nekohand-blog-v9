@@ -8,6 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "start:prod": "next start -p 2222",
     "export": "next build",
     "lint": "next lint",
     "type-check": "tsc --noEmit"

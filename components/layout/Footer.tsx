@@ -27,7 +27,7 @@ export default function Footer() {
           <Link color="inherit" href="https://blog.ecs32.top/" target="_blank" rel="noreferrer">
             Nekohand 公式サイト委員會
           </Link>{' '}
-          2026.
+          2014-2026.
           <Link
             color="inherit"
             href="https://tae.ecs32.top/"

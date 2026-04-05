@@ -5,6 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from '@/styles/theme';
 import MainLayout from '@/components/layout/MainLayout';
+import GlobalAudioPlayer from '@/components/music/GlobalAudioPlayer';
 
 export const metadata: Metadata = {
   title: 'Nekohand Blog - Music & Life',
@@ -23,7 +24,10 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <Script src="/site-background.js" strategy="afterInteractive" />
-            <MainLayout>{children}</MainLayout>
+            <MainLayout>
+              {children}
+              <GlobalAudioPlayer />
+            </MainLayout>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

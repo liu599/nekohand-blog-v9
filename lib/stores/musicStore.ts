@@ -14,12 +14,22 @@ export const useMusicStore = create<MusicState>((set, get) => ({
 
   // Actions
   setMusicData: (musicData: Music[]) => {
-    const albums = keyNameFilter('album', musicData);
+    const albums = groupAlbums(musicData);
     const artists = keyNameFilter('artist', musicData);
     set({
       storage: musicData,
       albums,
       artists,
+    });
+  },
+
+  setCurrentMusic: (music: Music, index: number) => {
+    set({
+      current: {
+        ix: index,
+        data: music,
+      },
+      isPlaying: false,
     });
   },
 
@@ -87,6 +97,29 @@ function keyNameFilter(keyName: string, arr: Music[]) {
       keyMap[key] = ret.length;
       ret.push({ ...arr[i], audioList: [arr[i]] });
     }
+  }
+
+  return ret;
+}
+
+function groupAlbums(arr: Music[]) {
+  const keyMap: Record<string, number> = {};
+  const ret: any[] = [];
+
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    const key = item.albumKey || item.album;
+    if (!key) {
+      continue;
+    }
+
+    if (keyMap.hasOwnProperty(key)) {
+      ret[keyMap[key]].audioList.push(item);
+      continue;
+    }
+
+    keyMap[key] = ret.length;
+    ret.push({ ...item, audioList: [item] });
   }
 
   return ret;
