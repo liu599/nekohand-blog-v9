@@ -11,6 +11,7 @@ import CardContent from '@mui/material/CardContent';
 import CardActionArea from '@mui/material/CardActionArea';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -50,6 +51,7 @@ interface GalleryApiResponse {
 export default function GalleryPage() {
   const searchParams = useSearchParams();
   const [pictures, setPictures] = useState<Picture[]>([]);
+  const [selectedPicture, setSelectedPicture] = useState<Picture | null>(null);
   const [musicList, setMusicList] = useState<Music[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -288,19 +290,49 @@ export default function GalleryPage() {
       <Grid container spacing={2}>
         {pictures.map((picture) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={picture.id}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <CardMedia component="img" height="200" image={picture.src} alt={picture.title || `Picture ${picture.id}`} sx={{ objectFit: 'cover' }} loading="lazy" />
-              <CardContent sx={{ flexGrow: 1 }}>
-                {picture.title && (
-                  <Typography variant="subtitle2" noWrap>
-                    {picture.title}
-                  </Typography>
-                )}
-              </CardContent>
+            <Card sx={{ height: '100%' }}>
+              <CardActionArea onClick={() => setSelectedPicture(picture)}>
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={picture.src}
+                  alt={picture.title || `Picture ${picture.id}`}
+                  sx={{ objectFit: 'cover' }}
+                  loading="lazy"
+                />
+              </CardActionArea>
             </Card>
           </Grid>
         ))}
       </Grid>
+
+      <Dialog
+        open={Boolean(selectedPicture)}
+        onClose={() => setSelectedPicture(null)}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            backgroundImage: 'none',
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            m: 2,
+          },
+        }}
+      >
+        {selectedPicture && (
+          <Box
+            component="img"
+            src={selectedPicture.src}
+            alt={selectedPicture.title || `Picture ${selectedPicture.id}`}
+            sx={{
+              display: 'block',
+              maxWidth: 'calc(100vw - 32px)',
+              maxHeight: 'calc(100vh - 32px)',
+              objectFit: 'contain',
+            }}
+          />
+        )}
+      </Dialog>
 
       <Box ref={loadMoreRef} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 72, mt: 4 }}>
         {loadingMore && <CircularProgress size={28} color="primary" />}
