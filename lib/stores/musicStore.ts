@@ -78,11 +78,13 @@ function keyNameFilter(keyName: string, arr: Music[]) {
     const key = arr[i][keyName as keyof Music] as string;
     if (key && keyMap.hasOwnProperty(key)) {
       const existingIndex = keyMap[key];
-      ret[existingIndex].audioList.push(arr[i]);
+      if (ret[existingIndex]) {
+        ret[existingIndex].audioList.push(arr[i]);
+      }
       continue;
     }
     if (key) {
-      keyMap[key] = i;
+      keyMap[key] = ret.length;
       ret.push({ ...arr[i], audioList: [arr[i]] });
     }
   }

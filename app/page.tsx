@@ -12,6 +12,7 @@ import Box from '@mui/material/Box';
 import AudioPlayer from '@/components/music/AudioPlayer';
 import { useMusicStore } from '@/lib/stores/musicStore';
 import { Music } from '@/types/music';
+import { API_CONFIG } from '@/lib/api/config';
 
 export default function HomePage() {
   const { albums, artists, setMusicData } = useMusicStore();
@@ -42,8 +43,7 @@ export default function HomePage() {
   }
 
   function processMusicData(rawData: any[]) {
-    const fileRootUrl = 'https://file.ecs32.top/data';
-    const oldFileRootUrl = 'https://file.ecs32.top/data/music';
+    const musicRootUrl = API_CONFIG.oldFileRootUrl;
     const artistMap: Record<string, string> = {
       'A_PPP': "Poppin'Party",
       'G_Cover': 'BanG Dream! Girls Band Party Cover Songs',
@@ -57,14 +57,14 @@ export default function HomePage() {
 
     return rawData.map((item: any) => {
       const nm = decodeURIComponent(item.fileName).split(`.${item.filetype}`)[0].trim();
-      const rp = decodeURIComponent(item.relativePath).split('/');
-      const rootUrl = item.FileNo < 2073 ? oldFileRootUrl : fileRootUrl;
+      const relativePath = decodeURIComponent(item.relativePath);
+      const rp = relativePath.split('/');
 
       return {
         name: nm + (item.filetype !== 'flac' ? '' : ' [HQ]'),
         artist: artistMap[rp[rp.length - 3]] || rp[rp.length - 3],
-        url: rootUrl + decodeURIComponent(item.src),
-        cover: rootUrl + decodeURIComponent(item.relativePath) + 'cover.jpg',
+        url: `${musicRootUrl}${decodeURIComponent(item.src)}`,
+        cover: `${musicRootUrl}${relativePath}cover.jpg`,
         album: rp[rp.length - 2],
         filetype: item.filetype,
         lrc: null,

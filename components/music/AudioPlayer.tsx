@@ -14,6 +14,8 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useMusicStore } from '@/lib/stores/musicStore';
 import { Music } from '@/types/music';
 
@@ -27,12 +29,12 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
+  const [minimized, setMinimized] = useState(false);
 
   const {
     current,
     isPlaying,
     playMusic,
-    pauseMusic,
     togglePlay,
     nextTrack,
     prevTrack,
@@ -42,9 +44,6 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
   useEffect(() => {
     if (playlist && playlist.length > 0) {
       setPlaylist(playlist);
-      if (!current.data) {
-        playMusic(playlist[0], 0);
-      }
     }
   }, [playlist]);
 
@@ -117,7 +116,47 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
   };
 
   return (
-    <Card sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000 }}>
+    <Card
+      sx={{
+        position: 'fixed',
+        bottom: 12,
+        left: { xs: 8, md: 16 },
+        right: minimized ? 'auto' : { xs: 8, md: 16 },
+        width: minimized ? 220 : 'auto',
+        zIndex: 1000,
+        overflow: 'hidden',
+        borderRadius: 3,
+        border: '1px solid rgba(255,255,255,0.22)',
+        background:
+          'linear-gradient(135deg, rgba(255,255,255,0.34), rgba(255,255,255,0.12))',
+        backdropFilter: 'blur(18px) saturate(140%)',
+        boxShadow:
+          '0 18px 45px rgba(31, 38, 135, 0.22), inset 0 1px 0 rgba(255,255,255,0.18)',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          opacity: 0.24,
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)
+          `,
+          backgroundSize: '8px 8px, 8px 8px',
+          mixBlendMode: 'soft-light',
+        },
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          inset: '-20% 30% auto -10%',
+          height: 90,
+          borderRadius: 999,
+          background: 'radial-gradient(circle, rgba(255,255,255,0.28), transparent 70%)',
+          filter: 'blur(18px)',
+          pointerEvents: 'none',
+        },
+      }}
+    >
       <audio
         ref={audioRef}
         src={current.data?.url}
@@ -125,7 +164,33 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleNext}
       />
-      <CardContent>
+      <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+        {minimized ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton
+              onClick={handlePlayPause}
+              size="small"
+              sx={{ backgroundColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}
+            >
+              {isPlaying ? <PauseIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
+            </IconButton>
+            <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+              <Typography variant="subtitle2" noWrap>
+                {current.data?.name || 'Music Player'}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" noWrap>
+                {current.data?.artist || 'Ready'}
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={() => setMinimized(false)}
+              size="small"
+              sx={{ backgroundColor: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(8px)' }}
+            >
+              <ExpandLessIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        ) : (
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={4}>
             {current.data && (
@@ -133,7 +198,14 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
                 <img
                   src={current.data.cover}
                   alt={current.data.name}
-                  style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }}
+                  style={{
+                    width: 60,
+                    height: 60,
+                    objectFit: 'cover',
+                    borderRadius: 8,
+                    border: '1px solid rgba(255,255,255,0.24)',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                  }}
                 />
                 <Box>
                   <Typography variant="subtitle1" noWrap>
@@ -150,13 +222,29 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
           <Grid item xs={12} md={4}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <IconButton onClick={handlePrev}>
+                <IconButton
+                  onClick={() => setMinimized(true)}
+                  sx={{ backgroundColor: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(8px)' }}
+                >
+                  <ExpandMoreIcon />
+                </IconButton>
+                <IconButton
+                  onClick={handlePrev}
+                  sx={{ backgroundColor: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(8px)' }}
+                >
                   <SkipPreviousIcon />
                 </IconButton>
-                <IconButton onClick={handlePlayPause} size="large">
+                <IconButton
+                  onClick={handlePlayPause}
+                  size="large"
+                  sx={{ backgroundColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}
+                >
                   {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
-                <IconButton onClick={handleNext}>
+                <IconButton
+                  onClick={handleNext}
+                  sx={{ backgroundColor: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(8px)' }}
+                >
                   <SkipNextIcon />
                 </IconButton>
               </Box>
@@ -177,7 +265,10 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
 
           <Grid item xs={12} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <IconButton onClick={handleMuteToggle}>
+              <IconButton
+                onClick={handleMuteToggle}
+                sx={{ backgroundColor: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(8px)' }}
+              >
                 {muted ? <VolumeOffIcon /> : <VolumeUpIcon />}
               </IconButton>
               <Slider
@@ -193,6 +284,7 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
             </Box>
           </Grid>
         </Grid>
+        )}
       </CardContent>
     </Card>
   );
