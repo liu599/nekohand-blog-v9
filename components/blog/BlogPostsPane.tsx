@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import Link from 'next/link';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
@@ -26,6 +28,19 @@ export default function BlogPostsPane({
   currentPage,
   onPageChange,
 }: BlogPostsPaneProps) {
+  useEffect(() => {
+    const nextCache = posts.reduce<Record<string, Post>>((accumulator, post) => {
+      if (post.id) {
+        accumulator[post.id] = post;
+      }
+      return accumulator;
+    }, {});
+
+    const currentCache = readPostCache();
+    const mergedCache = { ...currentCache, ...nextCache };
+    localStorage.setItem('blog-post-cache', JSON.stringify(mergedCache));
+  }, [posts]);
+
   return (
     <Box sx={{ position: 'relative', minHeight: 240 }}>
       {loading && (
@@ -53,7 +68,11 @@ export default function BlogPostsPane({
           return (
             <Grid item xs={12} key={post.id || post.pid}>
               <Card>
-                <CardActionArea sx={{ alignItems: 'stretch' }}>
+                <CardActionArea
+                  component={Link}
+                  href={`/blog/post?id=${post.id}`}
+                  sx={{ alignItems: 'stretch' }}
+                >
                   <CardContent>
                     <Typography variant="h5" component="h2" gutterBottom>
                       {post.title}
@@ -148,4 +167,13 @@ function getExcerpt(html: string) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   return (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+}
+
+function readPostCache() {
+  try {
+    const rawCache = localStorage.getItem('blog-post-cache');
+    return rawCache ? (JSON.parse(rawCache) as Record<string, Post>) : {};
+  } catch {
+    return {};
+  }
 }

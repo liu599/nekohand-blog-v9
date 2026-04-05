@@ -4,8 +4,6 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
-import Stack from '@mui/material/Stack';
-import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -62,54 +60,35 @@ export default function BlogSidebar({
 
         <Divider sx={{ marginBottom: 2 }} />
 
-        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ marginBottom: 1.5 }}>
-          <Chip
-            label="All"
-            size="small"
-            color={activeCategoryId === null ? 'primary' : 'default'}
-            variant={activeCategoryId === null ? 'filled' : 'outlined'}
-            onClick={onCategoryClear}
-          />
-        </Stack>
-
-        <Stack spacing={1.5}>
+        <List disablePadding>
           {categories.map((category) => (
-            <Box
+            <ListItemButton
               key={category.id || category.cid}
+              onClick={() => onCategoryClick(category.id)}
+              selected={activeCategoryId === category.id}
               sx={{
-                padding: 1.5,
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                backgroundColor: 'background.paper',
+                borderRadius: 1.5,
+                px: 1,
+                py: 0.5,
+                minHeight: 36,
+                '&.Mui-selected': {
+                  backgroundColor: 'action.hover',
+                },
+                '&.Mui-selected:hover': {
+                  backgroundColor: 'action.selected',
+                },
               }}
             >
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 1,
-                  marginBottom: 0.5,
+              <ListItemText
+                primary={category.cname}
+                primaryTypographyProps={{
+                  variant: 'body1',
+                  color: activeCategoryId === category.id ? 'text.primary' : 'text.secondary',
                 }}
-              >
-                <Typography variant="subtitle2">{category.cname}</Typography>
-                <Chip
-                  label={activeCategoryId === category.id ? 'Current' : 'Filter'}
-                  size="small"
-                  color={activeCategoryId === category.id ? 'primary' : 'default'}
-                  variant={activeCategoryId === category.id ? 'filled' : 'outlined'}
-                  onClick={() => onCategoryClick(category.id)}
-                />
-              </Box>
-              {category.cinfo && (
-                <Typography variant="body2" color="text.secondary">
-                  {category.cinfo.trim()}
-                </Typography>
-              )}
-            </Box>
+              />
+            </ListItemButton>
           ))}
-        </Stack>
+        </List>
 
         <Divider sx={{ marginY: 3 }} />
 
@@ -212,7 +191,22 @@ export default function BlogSidebar({
 
         {activeChronology && (
           <Box sx={{ mt: 1.5 }}>
-            <Chip label="Clear date filter" size="small" variant="outlined" onClick={onChronologyClear} />
+            <Box
+              onClick={onChronologyClear}
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                px: 1,
+                py: 0.5,
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'divider',
+                color: 'text.secondary',
+                cursor: 'pointer',
+              }}
+            >
+              <Typography variant="caption">清除日期筛选</Typography>
+            </Box>
           </Box>
         )}
       </CardContent>

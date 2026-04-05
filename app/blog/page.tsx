@@ -77,6 +77,7 @@ export default function BlogPage() {
     chronologyFilter: string | null = activeChronology,
     categoryId: string | null = activeCategoryId
   ) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setPostsLoading(true);
 
     try {

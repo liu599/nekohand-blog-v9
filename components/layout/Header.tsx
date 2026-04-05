@@ -20,6 +20,7 @@ import { usePathname } from 'next/navigation';
 const sections = [
   { title: 'Status', url: '/' },
   { title: 'Blog', url: '/blog' },
+  { title: 'Favorites', url: '/favorites' },
   { title: 'Gallery', url: '/gallery' },
   { title: 'About', url: '/about' },
   { title: 'Friends', url: '/friends' },
@@ -80,7 +81,7 @@ export default function Header() {
                 fontWeight: 700,
               }}
             >
-              Nekomusic
+              Nekohand
             </Typography>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               {sections.map((section) => (
