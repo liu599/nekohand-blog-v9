@@ -42,6 +42,23 @@ pnpm lint
 
 `pnpm start:prod` starts the app on port `2222`.
 
+## Docker Deployment
+
+Build and run with Docker:
+
+```bash
+docker build -t nekohand-blog-v9 .
+docker run -d --name nekohand-blog-v9 --restart unless-stopped -p 2222:2222 nekohand-blog-v9
+```
+
+Or use Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+The container serves the app on port `2222`, so Nginx can continue to reverse proxy to `127.0.0.1:2222`.
+
 ## Project Structure
 
 ```text
@@ -57,7 +74,7 @@ nekohand_blog_9/
 
 ## Production Deployment
 
-Production uses `pm2 + next start` behind Nginx.
+Production supports both Docker and `pm2 + next start` behind Nginx.
 
 ### Build
 

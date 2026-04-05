@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  nekohand-blog:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nekohand-blog-v9
+    restart: unless-stopped
+    ports:
+      - "2222:2222"
+    environment:
+      NODE_ENV: production

@@ -1,13 +1,52 @@
 # Production Deployment
 
-This project runs as a Node.js service behind Nginx, managed by `pm2`.
+This project can run either with Docker or as a plain Node.js service behind Nginx.
+
+## Recommended
+
+Use Docker for production unless you specifically need `pm2` on the host.
 
 ## Runtime
 
 - App server: `next start`
 - Production port: `2222`
-- Process manager: `pm2`
+- Container port: `2222`
 - Reverse proxy: `nginx`
+
+## Docker
+
+### Build Image
+
+```bash
+docker build -t nekohand-blog-v9 .
+```
+
+### Run Container
+
+```bash
+docker run -d \
+  --name nekohand-blog-v9 \
+  --restart unless-stopped \
+  -p 2222:2222 \
+  nekohand-blog-v9
+```
+
+### Docker Compose
+
+```bash
+docker compose up -d --build
+```
+
+Common operations:
+
+```bash
+docker compose ps
+docker compose logs -f
+docker compose restart
+docker compose down
+```
+
+Nginx can continue to proxy to `127.0.0.1:2222`.
 
 ## Install And Build
 
@@ -23,6 +62,8 @@ pnpm start:prod
 ```
 
 ## PM2 Commands
+
+Use this only if you are not deploying with Docker.
 
 Start:
 
@@ -54,6 +95,14 @@ Notes:
 - That Nginx file is intentionally gitignored because it is environment-specific.
 
 ## Update Flow
+
+```bash
+cd /home/wwwroot/blog.ecs32.top/nekohand_blog_9
+git pull
+docker compose up -d --build
+```
+
+For host-based `pm2` deployment:
 
 ```bash
 cd /home/wwwroot/blog.ecs32.top/nekohand_blog_9
