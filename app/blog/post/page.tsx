@@ -1,11 +1,15 @@
-'use client';
-
-import { useSearchParams } from 'next/navigation';
 import BlogDetailPage from '@/components/blog/BlogDetailPage';
+import { fetchBlogPostById } from '@/lib/blog/api';
 
-export default function BlogPostPage() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+type BlogPostPageProps = {
+  searchParams?: {
+    id?: string;
+  };
+};
 
-  return <BlogDetailPage id={id} />;
+export default async function BlogPostPage({ searchParams }: BlogPostPageProps) {
+  const id = searchParams?.id || null;
+  const post = id ? await fetchBlogPostById(id) : null;
+
+  return <BlogDetailPage id={id} post={post} />;
 }

@@ -1,6 +1,3 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -13,22 +10,10 @@ import { Post } from '@/types/blog';
 
 type BlogDetailPageProps = {
   id: string | null;
+  post: Post | null;
 };
 
-export default function BlogDetailPage({ id }: BlogDetailPageProps) {
-  const [post, setPost] = useState<Post | null>(null);
-
-  useEffect(() => {
-    if (!id) {
-      setPost(null);
-      return;
-    }
-
-    const cache = readPostCache();
-    setPost(cache[id] || null);
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }, [id]);
-
+export default function BlogDetailPage({ id, post }: BlogDetailPageProps) {
   if (!id || !post) {
     return (
       <Card>
@@ -37,7 +22,7 @@ export default function BlogDetailPage({ id }: BlogDetailPageProps) {
             Post not found
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Please open this article from the blog list first.
+            The requested article could not be loaded.
           </Typography>
           <Button component={Link} href="/blog" variant="outlined">
             Back to Blog
@@ -120,13 +105,4 @@ function formatTimestamp(timestamp?: number) {
     month: '2-digit',
     day: '2-digit',
   });
-}
-
-function readPostCache() {
-  try {
-    const rawCache = localStorage.getItem('blog-post-cache');
-    return rawCache ? (JSON.parse(rawCache) as Record<string, Post>) : {};
-  } catch {
-    return {};
-  }
 }
