@@ -25,8 +25,13 @@ export default function AboutPage() {
           Nekohand Blog v9
         </Typography>
         <Typography paragraph>
-          Welcome to Nekohand Blog! This is a modern blog system built with Next.js 14 and Material
-          UI v5.
+          Nekohand Blog is the current generation of a long-running personal site focused on blog
+          posts, music collection browsing, gallery pages, bookmarks, and friend links.
+        </Typography>
+        <Typography paragraph>
+          The current codebase runs on Next.js 16 App Router with React 19, keeps a persistent
+          floating audio player across route changes, and integrates multiple remote content APIs
+          while staying compatible with the existing site structure.
         </Typography>
 
         <Divider sx={{ my: 3, borderColor: 'rgba(255, 255, 255, 0.58)' }} />
@@ -36,10 +41,11 @@ export default function AboutPage() {
         </Typography>
         <Typography component="div">
           <ul>
-            <li>Next.js 14 (App Router)</li>
-            <li>React 18</li>
+            <li>Next.js 16 (App Router)</li>
+            <li>React 19</li>
             <li>Material UI v5</li>
             <li>TypeScript</li>
+            <li>Axios for API access and compatibility work</li>
             <li>Zustand (State Management)</li>
             <li>pnpm (Package Manager)</li>
           </ul>
@@ -51,10 +57,11 @@ export default function AboutPage() {
         <Typography component="div">
           <ul>
             <li>Blog posts with pagination</li>
-            <li>Music album gallery</li>
-            <li>Artist information</li>
+            <li>Music album gallery and track listing</li>
+            <li>Favorites and friends pages backed by remote resource files</li>
+            <li>Persistent floating audio player</li>
             <li>Responsive design</li>
-            <li>Static export support</li>
+            <li>Hybrid static and dynamic rendering depending on the page data source</li>
           </ul>
         </Typography>
 
@@ -86,7 +93,8 @@ export default function AboutPage() {
                 <li>2019.09.14 Version 7.2 Kasumi-Symphjoy with React-Symphjoy</li>
                 <li>2020.10.03 Version 7.4 Kasumi-Symphjoy with React-Symphjoy</li>
                 <li>2021.01.03 v8.0.0 UmiJS 3.0 + Material-UI v4</li>
-                <li>2026.04.05 v9.0.0 Next.js 14 + Material UI v5 complete rewrite with claude code</li>
+                <li>2026.04.05 v9.0.0 Next.js 14 + Material UI v5 complete rewrite</li>
+                <li>2026.04.20 v9.1.0 Next.js 16 + React 19 upgrade with API compatibility updates</li>
               </ul>
             </li>
           </ul>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Typography from '@mui/material/Typography';
@@ -18,7 +18,6 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import { API_CONFIG, BLOG_API } from '@/lib/api/config';
 import { fetchMusicCatalogClient } from '@/lib/music/catalog';
@@ -48,8 +47,12 @@ interface GalleryApiResponse {
   };
 }
 
-export default function GalleryPage() {
-  const searchParams = useSearchParams();
+type GalleryPageContentProps = {
+  albumKey: string | null;
+  isAlbumsMode: boolean;
+};
+
+function GalleryPageContent({ albumKey, isAlbumsMode }: GalleryPageContentProps) {
   const [pictures, setPictures] = useState<Picture[]>([]);
   const [selectedPicture, setSelectedPicture] = useState<Picture | null>(null);
   const [musicList, setMusicList] = useState<Music[]>([]);
@@ -60,44 +63,7 @@ export default function GalleryPage() {
   const [error, setError] = useState<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  const isAlbumsMode = searchParams.get('albums') === '1';
-  const albumKey = searchParams.get('album');
-
-  useEffect(() => {
-    setCurrentPage(1);
-    setPictures([]);
-
-    if (isAlbumsMode || albumKey) {
-      void fetchMusicData();
-    } else {
-      void fetchPictures(1, true);
-    }
-  }, [isAlbumsMode, albumKey]);
-
-  useEffect(() => {
-    if (isAlbumsMode || albumKey || !loadMoreRef.current || !hasMore || loading || loadingMore) {
-      return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting) {
-        setCurrentPage((prev) => prev + 1);
-      }
-    }, { rootMargin: '800px 0px' });
-
-    observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [albumKey, hasMore, isAlbumsMode, loading, loadingMore, pictures.length]);
-
-  useEffect(() => {
-    if (isAlbumsMode || albumKey || currentPage === 1) {
-      return;
-    }
-
-    void fetchPictures(currentPage, false);
-  }, [albumKey, currentPage, isAlbumsMode]);
-
-  async function fetchMusicData() {
+  const fetchMusicData = useCallback(async () => {
     setLoading(true);
     try {
       const catalog = await fetchMusicCatalogClient();
@@ -109,9 +75,9 @@ export default function GalleryPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function fetchPictures(page: number, replace: boolean) {
+  const fetchPictures = useCallback(async (page: number, replace: boolean) => {
     if (replace) {
       setLoading(true);
     } else {
@@ -135,18 +101,21 @@ export default function GalleryPage() {
 
       const data: GalleryApiResponse = await response.json();
       const items = data.data || [];
-      const existingCount = replace ? 0 : pictures.length;
       const processedData = items.map((item, index) => ({
         id: Number(item.fileId) || index + (page - 1) * PAGE_SIZE,
         src: `${API_CONFIG.ossRootUrl}${item.relativePath}${item.fileName}`,
         title: item.fileName,
       }));
 
-      setPictures((prev) => (replace ? processedData : [...prev, ...processedData]));
+      let nextCount = 0;
+      setPictures((prev) => {
+        const merged = replace ? processedData : [...prev, ...processedData];
+        nextCount = merged.length;
+        return merged;
+      });
       setError(null);
 
       const total = Number(data.pager?.total || 0);
-      const nextCount = existingCount + processedData.length;
       setHasMore(total > 0 ? nextCount < total : processedData.length === PAGE_SIZE);
     } catch (fetchError) {
       console.error('Failed to fetch pictures:', fetchError);
@@ -156,7 +125,62 @@ export default function GalleryPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (isAlbumsMode || albumKey) {
+      queueMicrotask(() => {
+        if (!cancelled) {
+          void fetchMusicData();
+        }
+      });
+    } else {
+      queueMicrotask(() => {
+        if (!cancelled) {
+          void fetchPictures(1, true);
+        }
+      });
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [albumKey, fetchMusicData, fetchPictures, isAlbumsMode]);
+
+  useEffect(() => {
+    if (isAlbumsMode || albumKey || !loadMoreRef.current || !hasMore || loading || loadingMore) {
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        setCurrentPage((prev) => prev + 1);
+      }
+    }, { rootMargin: '800px 0px' });
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [albumKey, hasMore, isAlbumsMode, loading, loadingMore, pictures.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (isAlbumsMode || albumKey || currentPage === 1) {
+      return;
+    }
+
+    queueMicrotask(() => {
+      if (!cancelled) {
+        void fetchPictures(currentPage, false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [albumKey, currentPage, fetchPictures, isAlbumsMode]);
 
   const albums = useMemo(() => groupAlbums(musicList), [musicList]);
   const currentAlbum = useMemo(
@@ -343,6 +367,31 @@ export default function GalleryPage() {
         )}
       </Box>
     </Box>
+  );
+}
+
+export default function GalleryPage() {
+  return (
+    <Suspense
+      fallback={
+        <Box sx={{ padding: 4, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress color="primary" />
+        </Box>
+      }
+    >
+      <GalleryPageShell />
+    </Suspense>
+  );
+}
+
+function GalleryPageShell() {
+  const searchParams = useSearchParams();
+  const isAlbumsMode = searchParams.get('albums') === '1';
+  const albumKey = searchParams.get('album');
+  const viewKey = `${isAlbumsMode ? 'albums' : 'gallery'}:${albumKey || ''}`;
+
+  return (
+    <GalleryPageContent key={viewKey} albumKey={albumKey} isAlbumsMode={isAlbumsMode} />
   );
 }
 

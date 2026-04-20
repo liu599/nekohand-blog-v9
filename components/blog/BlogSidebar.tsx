@@ -43,7 +43,6 @@ export default function BlogSidebar({
   expandedYears,
   chronologyCount,
   onCategoryClick,
-  onCategoryClear,
   onChronologyClick,
   onChronologyClear,
   onYearToggle,

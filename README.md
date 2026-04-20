@@ -1,35 +1,48 @@
 # Nekohand Blog v9
 
-A blog system built with Next.js 14, Material UI v5, and Zustand.
+Nekohand Blog v9 is a personal blog application built with Next.js 16 App Router, React 19, Material UI v5, TypeScript, and Zustand.
+
+## Tech Stack
+
+- Next.js 16.2
+- React 19.2
+- Material UI v5
+- TypeScript
+- Zustand
+- Axios 1.15
+- pnpm
 
 ## Features
 
-- Next.js 14 App Router
-- Material UI v5
-- TypeScript
-- Zustand state management
-- Floating music player with persistent playback across route changes
-- Blog pages
-- Gallery pages
+- App Router based blog pages
+- Gallery pages with album mode and image preview
+- Favorites page
+- Friends page
+- Persistent floating music player across route changes
 - Responsive layout
+
+## Requirements
+
+- Node.js 20.9+ recommended
+- pnpm 10+
 
 ## Quick Start
 
-### Prerequisites
-
-- Node.js 18+
-- pnpm
-
-### Local Development
+Install dependencies:
 
 ```bash
 pnpm install
+```
+
+Start local development:
+
+```bash
 pnpm dev
 ```
 
 Open `http://localhost:3000`.
 
-## Scripts
+## Available Scripts
 
 ```bash
 pnpm dev
@@ -40,7 +53,17 @@ pnpm type-check
 pnpm lint
 ```
 
-`pnpm start:prod` starts the app on port `2222`.
+Notes:
+
+- `pnpm start:prod` starts the app on port `2222`.
+- `pnpm lint` uses the ESLint CLI with the flat config in `eslint.config.mjs`.
+
+## Production Notes
+
+This project now runs on a normal Next.js server build with `next start`.
+
+- `/blog` and `/blog/post` are dynamic routes because they fetch live remote data.
+- `/gallery` remains statically generated, with client-side search param handling wrapped for Next.js 16 compatibility.
 
 ## Docker Deployment
 
@@ -57,7 +80,32 @@ Or use Docker Compose:
 docker compose up -d --build
 ```
 
-The container serves the app on port `2222`, so Nginx can continue to reverse proxy to `127.0.0.1:2222`.
+The container serves the app on port `2222`, so Nginx can reverse proxy to `127.0.0.1:2222`.
+
+## Manual Production Deployment
+
+Install and build:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+Run on port `2222`:
+
+```bash
+pnpm start:prod
+```
+
+PM2 example:
+
+```bash
+pm2 start "pnpm start:prod" --name nekohand-blog-v9
+pm2 save
+pm2 startup
+```
+
+Full deployment notes are in [deploy.md](./docs/deploy.md).
 
 ## Project Structure
 
@@ -72,45 +120,7 @@ nekohand_blog_9/
 \- types/
 ```
 
-## Production Deployment
-
-Production supports both Docker and `pm2 + next start` behind Nginx.
-
-### Build
-
-```bash
-pnpm install --frozen-lockfile
-pnpm build
-```
-
-### Run On Port 2222
-
-```bash
-pnpm start:prod
-```
-
-### PM2
-
-```bash
-pm2 start "pnpm start:prod" --name nekohand-blog-v9
-pm2 save
-pm2 startup
-```
-
-### Nginx
-
-Use the sample config in `docs/nginx.production.conf`.
-
-Notes:
-
-- The upstream application port is `2222`.
-- The Nginx sample file is intentionally gitignored because it is server-specific.
-
-### Full Deployment Notes
-
-See [deploy.md](/D:/Project/nekohand_blog_9/docs/deploy.md) for the complete deployment flow.
-
-## API Endpoints
+## External APIs
 
 - Blog Posts: `https://kasumi.ecs32.top/api/nekohand/v2/frontend/posts`
 - Music List: `https://mltd.ecs32.top/filelist`

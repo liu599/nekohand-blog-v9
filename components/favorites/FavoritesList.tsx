@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { FavoritesResponse, FavoriteCategory } from '@/types/favorites';
 import { BLOG_API } from '@/lib/api/config';
+import { parseApiJsonResponse } from '@/lib/api/response';
 
 export default function FavoritesList() {
   const [favorites, setFavorites] = useState<FavoriteCategory[]>([]);
@@ -26,13 +27,11 @@ export default function FavoritesList() {
     async function fetchFavorites() {
       try {
         const response = await fetch(BLOG_API.favorites);
-        const data: FavoritesResponse = await response.json();
+        const data = await parseApiJsonResponse<FavoritesResponse>(response);
+        const normalizedFavorites = normalizeFavoritesResponse(data);
 
-        if (data.success && data.code === 0) {
-          setFavorites(data.data.content);
-        } else {
-          setError('Failed to load favorites');
-        }
+        setFavorites(normalizedFavorites);
+        setError(null);
       } catch (err) {
         setError('Error fetching favorites');
         console.error('Error:', err);
@@ -116,4 +115,16 @@ export default function FavoritesList() {
       </Grid>
     </Container>
   );
+}
+
+function normalizeFavoritesResponse(payload: FavoritesResponse): FavoriteCategory[] {
+  if (Array.isArray(payload.content)) {
+    return payload.content;
+  }
+
+  if (payload.success === false || payload.code && payload.code !== 0) {
+    return [];
+  }
+
+  return payload.data?.content ?? [];
 }

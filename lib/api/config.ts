@@ -28,6 +28,6 @@ export const BLOG_API = {
   postChronology: 'https://kasumi.ecs32.top/api/nekohand/v2/frontend/posts-chronology',
   aimiPic: 'https://mltd.ecs32.top/tag.filelist',
   aimiPicTags: 'https://mltd.ecs32.top/tags.get',
-  friends: 'https://api.ecs32.top/service/friends',
-  favorites: 'https://api.ecs32.top/service/favorites',
+  friends: 'https://ws.ecs32.top/hyancie/api/v1/resource/files/friends.json',
+  favorites: 'https://ws.ecs32.top/hyancie/api/v1/resource/files/favorites.json',
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -49,27 +50,27 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
     prevTrack,
     setPlaylist,
   } = useMusicStore();
+  const currentTrack = current.data;
+  const isForcedMinimized = pathname !== '/' && Boolean(currentTrack);
 
   useEffect(() => {
     if (playlist && playlist.length > 0) {
       setPlaylist(playlist);
-      if (!current.data) {
+      if (!currentTrack) {
         setCurrentMusic(playlist[0], 0);
       }
     }
-  }, [playlist]);
+  }, [currentTrack, playlist, setCurrentMusic, setPlaylist]);
 
   useEffect(() => {
-    if (audioRef.current && current.data) {
+    if (audioRef.current && currentTrack) {
       if (isPlaying) {
-        setLoading(true);
         audioRef.current.play().catch(console.error);
       } else {
         audioRef.current.pause();
-        setLoading(false);
       }
     }
-  }, [isPlaying, current]);
+  }, [currentTrack, isPlaying]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -78,20 +79,8 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
     }
   }, [muted, volume]);
 
-  useEffect(() => {
-    if (pathname !== '/' && current.data) {
-      setMinimized(true);
-    }
-  }, [pathname, current.data]);
-
-  useEffect(() => {
-    setCurrentTime(0);
-    setDuration(0);
-    setLoading(Boolean(current.data && isPlaying));
-  }, [current.data?.url]);
-
   const handlePlayPause = () => {
-    if (!current.data && playlist && playlist.length > 0) {
+    if (!currentTrack && playlist && playlist.length > 0) {
       playMusic(playlist[0], 0);
     } else {
       togglePlay();
@@ -110,6 +99,12 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
     }
   };
 
+  const handleLoadStart = () => {
+    setCurrentTime(0);
+    setDuration(0);
+    setLoading(true);
+  };
+
   const handleCanPlay = () => {
     setLoading(false);
   };
@@ -121,6 +116,10 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
   };
 
   const handlePlaying = () => {
+    setLoading(false);
+  };
+
+  const handlePause = () => {
     setLoading(false);
   };
 
@@ -155,12 +154,12 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
   };
 
   return (
-    <Box sx={{ position: 'fixed', bottom: 12, left: 0, right: 0, zIndex: 1000, pointerEvents: 'none' }}>
+    <Box sx={{ position: 'fixed', bottom: { xs: 88, md: 104 }, left: 0, right: 0, zIndex: 1000, pointerEvents: 'none' }}>
       <Container maxWidth="lg" sx={{ pointerEvents: 'auto', px: { xs: 1, md: 2 } }}>
         <Card
           sx={{
-            width: minimized ? 260 : '100%',
-            ml: minimized ? 0 : 'auto',
+            width: minimized || isForcedMinimized ? 260 : '100%',
+            ml: minimized || isForcedMinimized ? 0 : 'auto',
             mr: minimized ? 'auto' : 'auto',
             overflow: 'hidden',
             borderRadius: 3,
@@ -183,31 +182,34 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
         >
           <audio
             ref={audioRef}
-            src={current.data?.url}
+            key={currentTrack?.url || 'no-track'}
+            src={currentTrack?.url}
             preload="metadata"
+            onLoadStart={handleLoadStart}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
             onCanPlay={handleCanPlay}
             onWaiting={handleWaiting}
             onPlaying={handlePlaying}
+            onPause={handlePause}
             onEnded={nextTrack}
           />
 
           <CardContent sx={{ position: 'relative', zIndex: 1 }}>
-            {minimized ? (
+            {minimized || isForcedMinimized ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <IconButton onClick={handlePlayPause} size="small" sx={iconSx}>
                   {loading ? <CircularProgress size={16} thickness={5} /> : isPlaying ? <PauseIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
                 </IconButton>
                 <Box sx={{ minWidth: 0, flexGrow: 1 }}>
                   <Typography variant="subtitle2" noWrap>
-                    {current.data?.name || 'Music Player'}
+                    {currentTrack?.name || 'Music Player'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" noWrap>
-                    {current.data?.artist || 'Ready'}
+                    {currentTrack?.artist || 'Ready'}
                   </Typography>
                 </Box>
-                <IconButton onClick={() => setMinimized(false)} size="small" sx={iconSx}>
+                <IconButton onClick={() => setMinimized(false)} size="small" sx={iconSx} disabled={isForcedMinimized}>
                   <UnfoldMoreIcon fontSize="small" />
                 </IconButton>
               </Box>
@@ -215,11 +217,14 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
               <Stack spacing={2}>
                 <Grid container spacing={{ xs: 2, md: 1.5 }} alignItems="center" justifyContent="center">
                   <Grid item xs={12} md={3}>
-                    {current.data && (
+                    {currentTrack && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <img
-                          src={current.data.cover}
-                          alt={current.data.name}
+                        <Image
+                          src={currentTrack.cover}
+                          alt={currentTrack.name}
+                          width={60}
+                          height={60}
+                          unoptimized
                           style={{
                             width: 60,
                             height: 60,
@@ -231,10 +236,10 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
                         />
                         <Box sx={{ minWidth: 0 }}>
                           <Typography variant="subtitle1" noWrap>
-                            {current.data.name}
+                            {currentTrack.name}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" noWrap>
-                            {current.data.artist}
+                            {currentTrack.artist}
                           </Typography>
                         </Box>
                       </Box>
@@ -310,7 +315,7 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
           </CardContent>
         </Card>
 
-        {showPlaylist && !minimized && playlist && playlist.length > 0 && (
+        {showPlaylist && !(minimized || isForcedMinimized) && playlist && playlist.length > 0 && (
           <Box
             sx={{
               mb: 1.5,
@@ -330,7 +335,7 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
             <Stack spacing={0.5}>
               {playlist.map((track, index) => {
                 const active =
-                  current.data?.fileId === track.fileId && current.data?.filetype === track.filetype;
+                  currentTrack?.fileId === track.fileId && currentTrack?.filetype === track.filetype;
                 return (
                   <Box
                     key={`${track.fileId}-${track.filetype}-${index}`}

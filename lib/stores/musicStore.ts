@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Music, MusicState } from '@/types/music';
+import { Album, Artist, Music, MusicState } from '@/types/music';
 
 export const useMusicStore = create<MusicState>((set, get) => ({
   current: {
@@ -82,7 +82,7 @@ export const useMusicStore = create<MusicState>((set, get) => ({
 
 function keyNameFilter(keyName: string, arr: Music[]) {
   const keyMap: Record<string, number> = {};
-  const ret: any[] = [];
+  const ret: Artist[] = [];
 
   for (let i = 0; i < arr.length; i++) {
     const key = arr[i][keyName as keyof Music] as string;
@@ -104,7 +104,7 @@ function keyNameFilter(keyName: string, arr: Music[]) {
 
 function groupAlbums(arr: Music[]) {
   const keyMap: Record<string, number> = {};
-  const ret: any[] = [];
+  const ret: Album[] = [];
 
   for (let i = 0; i < arr.length; i++) {
     const item = arr[i];

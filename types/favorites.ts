@@ -28,8 +28,8 @@ export interface InfoData {
 }
 
 export interface FavoritesResponse {
-  code: number;
-  data: {
+  code?: number;
+  data?: {
     content: FavoriteCategory[];
     description: string;
     info: {
@@ -42,5 +42,8 @@ export interface FavoritesResponse {
     };
     version: string;
   };
-  success: boolean;
+  content?: FavoriteCategory[];
+  description?: string;
+  version?: string;
+  success?: boolean;
 }

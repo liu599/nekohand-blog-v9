@@ -9,6 +9,7 @@ import CardActionArea from '@mui/material/CardActionArea';
 import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
 import { BLOG_API } from '@/lib/api/config';
+import { parseApiJsonResponse } from '@/lib/api/response';
 
 interface FriendLink {
   link: string;
@@ -21,21 +22,31 @@ interface FriendGroup {
 }
 
 interface FriendsApiResponse {
-  code: number;
+  code?: number;
   data?: {
     data?: FriendGroup[];
     description?: string;
     version?: string;
-  };
+  } | FriendGroup[];
   success?: boolean;
+  description?: string;
+  version?: string;
 }
 
 function normalizeFriendsResponse(payload: FriendsApiResponse): FriendGroup[] {
-  if (!payload.success || payload.code !== 0) {
+  if (Array.isArray(payload.data)) {
+    return payload.data.filter((group) => Array.isArray(group.data));
+  }
+
+  if (payload.success === false || payload.code && payload.code !== 0) {
     return [];
   }
 
-  return (payload.data?.data ?? []).filter((group) => Array.isArray(group.data));
+  if (!payload.data || Array.isArray(payload.data)) {
+    return [];
+  }
+
+  return (payload.data.data ?? []).filter((group) => Array.isArray(group.data));
 }
 
 export default function FriendsPage() {
@@ -43,21 +54,21 @@ export default function FriendsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchFriends();
-  }, []);
-
-  async function fetchFriends() {
-    try {
-      const response = await fetch(BLOG_API.friends, { method: 'GET' });
-      const data: FriendsApiResponse = await response.json();
-      setFriendGroups(normalizeFriendsResponse(data));
-    } catch (error) {
-      console.error('Failed to fetch friends:', error);
-      setFriendGroups([]);
-    } finally {
-      setLoading(false);
+    async function fetchFriends() {
+      try {
+        const response = await fetch(BLOG_API.friends, { method: 'GET' });
+        const data = await parseApiJsonResponse<FriendsApiResponse>(response);
+        setFriendGroups(normalizeFriendsResponse(data));
+      } catch (error) {
+        console.error('Failed to fetch friends:', error);
+        setFriendGroups([]);
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+
+    void fetchFriends();
+  }, []);
 
   if (loading) {
     return (
