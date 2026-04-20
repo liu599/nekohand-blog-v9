@@ -31,6 +31,12 @@ docker run -d \
   nekohand-blog-v9
 ```
 
+### Run Remote Image
+
+```bash
+docker run -d -p 2222:2222 --name my-nextjs-app crpi-wl61u5kndq0f4th8.cn-shanghai.personal.cr.aliyuncs.com/eddie32/g1:1.0.0
+```
+
 ### Docker Compose
 
 ```bash

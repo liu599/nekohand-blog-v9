@@ -53,7 +53,7 @@ export default function Footer() {
           align="center"
           sx={{ mt: 0.5, color: 'rgba(255,255,255,0.88)' }}
         >
-          Publish Version: 9.0.0.20260405
+          Publish Version: 9.1.0.20260421
         </Typography>
       </Container>
     </Box>

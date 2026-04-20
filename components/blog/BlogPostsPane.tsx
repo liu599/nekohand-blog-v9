@@ -122,7 +122,7 @@ export default function BlogPostsPane({
               <Box sx={{ minWidth: 0 }}>
                 <Box
                   component={Link}
-                  href={`/blog/post?id=${post.id}`}
+                  href={`/blog/post?id=${post.pid}`}
                   sx={{
                     display: 'block',
                     textDecoration: 'none',

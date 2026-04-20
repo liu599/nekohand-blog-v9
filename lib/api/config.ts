@@ -22,7 +22,7 @@ export const API_CONFIG = {
 
 export const BLOG_API = {
   posts: 'https://ws.ecs32.top/hyancie/api/v1/blog/posts/list',
-  post: 'https://kasumi.ecs32.top/api/nekohand/v2/frontend/post',
+  post: 'https://ws.ecs32.top/hyancie/api/v1/blog/posts',
   postByCategory: 'https://kasumi.ecs32.top/api/nekohand/v2/frontend/categories',
   postTime: 'https://kasumi.ecs32.top/api/nekohand/v2/frontend/po/t',
   postChronology: 'https://kasumi.ecs32.top/api/nekohand/v2/frontend/posts-chronology',

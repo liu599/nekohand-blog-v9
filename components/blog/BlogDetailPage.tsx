@@ -24,9 +24,9 @@ export default function BlogDetailPage({ id, post }: BlogDetailPageProps) {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             The requested article could not be loaded.
           </Typography>
-          <Button component={Link} href="/blog" variant="outlined">
-            Back to Blog
-          </Button>
+          <Link href="/blog" style={{ textDecoration: 'none' }}>
+            <Button variant="outlined">Back to Blog</Button>
+          </Link>
         </CardContent>
       </Card>
     );
@@ -35,9 +35,11 @@ export default function BlogDetailPage({ id, post }: BlogDetailPageProps) {
   return (
     <Card>
       <CardContent sx={{ p: { xs: 2, md: 4 } }}>
-        <Button component={Link} href="/blog" variant="text" sx={{ mb: 2, px: 0 }}>
-          Back to Blog
-        </Button>
+        <Link href="/blog" style={{ textDecoration: 'none' }}>
+          <Button variant="text" sx={{ mb: 2, px: 0 }}>
+            Back to Blog
+          </Button>
+        </Link>
 
         <Typography variant="h3" gutterBottom>
           {post.title}

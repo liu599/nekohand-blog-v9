@@ -50,7 +50,7 @@ type BlogChronologyResponse = Partial<{
 
 type BlogPostDetailResponse = Partial<{
   code: number;
-  data: Post | Post[];
+  data: Post | Post[] | RawBlogPostItem;
   success: boolean;
 }>;
 
@@ -209,7 +209,10 @@ function mapRawBlogPostItem(item: RawBlogPostItem): Post {
 }
 
 export async function fetchBlogPostById(id: string, cache: RequestCache = 'no-store') {
-  const directPost = await tryFetchBlogPostDirect(id, cache);
+  const numericPid = Number(id);
+  const directPost = Number.isFinite(numericPid) && numericPid > 0
+    ? await tryFetchBlogPostDirectByPid(numericPid, cache)
+    : await tryFetchBlogPostDirect(id, cache);
   if (directPost) {
     return directPost;
   }
@@ -220,7 +223,7 @@ export async function fetchBlogPostById(id: string, cache: RequestCache = 'no-st
     cache,
   });
 
-  const firstMatch = firstPage.posts.find((post) => post.id === id);
+  const firstMatch = firstPage.posts.find((post) => String(post.pid) === id || post.id === id);
   if (firstMatch) {
     return firstMatch;
   }
@@ -234,7 +237,7 @@ export async function fetchBlogPostById(id: string, cache: RequestCache = 'no-st
       cache,
     });
 
-    const match = result.posts.find((post) => post.id === id);
+    const match = result.posts.find((post) => String(post.pid) === id || post.id === id);
     if (match) {
       return match;
     }
@@ -282,17 +285,50 @@ async function tryFetchBlogPostDirect(id: string, cache: RequestCache) {
   return null;
 }
 
-function normalizePostDetailResponse(value: BlogPostDetailResponse | Post) {
+async function tryFetchBlogPostDirectByPid(pid: number, cache: RequestCache) {
+  try {
+    const response = await fetch(`${BLOG_API.post}/${pid}`, {
+      method: 'GET',
+      headers: {
+        Accept: '*/*',
+      },
+      cache,
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const parsed = await parseApiJsonResponse<BlogPostDetailResponse | RawBlogPostItem>(response);
+    return normalizePostDetailResponse(parsed);
+  } catch {
+    return null;
+  }
+}
+
+function normalizePostDetailResponse(value: BlogPostDetailResponse | Post | RawBlogPostItem) {
   if (isPost(value)) {
     return value;
   }
 
+  if (isRawBlogPostItem(value)) {
+    return mapRawBlogPostItem(value);
+  }
+
   if (Array.isArray(value.data)) {
-    return value.data.find(isPost) || null;
+    const post = value.data.find((item) => isPost(item) || isRawBlogPostItem(item));
+    if (post && isRawBlogPostItem(post)) {
+      return mapRawBlogPostItem(post);
+    }
+    return post && isPost(post) ? post : null;
   }
 
   if (value.data && isPost(value.data)) {
     return value.data;
+  }
+
+  if (value.data && isRawBlogPostItem(value.data)) {
+    return mapRawBlogPostItem(value.data);
   }
 
   return null;
@@ -305,6 +341,18 @@ function isPost(value: unknown): value is Post {
 
   const candidate = value as Partial<Post>;
   return typeof candidate.id === 'string' && typeof candidate.title === 'string';
+}
+
+function isRawBlogPostItem(value: unknown): value is RawBlogPostItem {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as RawBlogPostItem;
+  return (
+    (typeof candidate.pid === 'number' || typeof candidate.pid === 'string') &&
+    typeof candidate.ptitle === 'string'
+  );
 }
 
 function getChronologyTimestamp(value: string) {
