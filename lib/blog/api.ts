@@ -1,4 +1,5 @@
 import { BLOG_API } from '@/lib/api/config';
+import { parseApiJsonResponse } from '@/lib/api/response';
 import { Category, Pager, Post } from '@/types/blog';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -6,9 +7,33 @@ const DETAIL_FALLBACK_PAGE_SIZE = 100;
 
 type BlogPostsResponse = Partial<{
   code: number;
-  data: Post[];
+  data: Post[] | {
+    list?: RawBlogPostItem[];
+    total?: string | number;
+    current?: string | number;
+    pageSize?: string | number;
+    pages?: string | number;
+  };
   pager: Pager;
   success: boolean;
+}>;
+
+type RawBlogPostItem = Partial<{
+  pid: number;
+  poid: string;
+  ptitle: string;
+  slug: string;
+  category: string;
+  template: number;
+  status: string;
+  author: string;
+  body: string;
+  password: string;
+  createdAt: string | number;
+  modifiedAt: string | number;
+  plink: string;
+  comment: number;
+  cid: string;
 }>;
 
 type BlogCategoriesResponse = Partial<{
@@ -81,31 +106,39 @@ export async function fetchBlogPosts(options: FetchPostsOptions = {}) {
       body.set('t', String(getChronologyTimestamp(chronologyFilter)));
     }
 
-    const requestUrl = isChronologyFilterActive
-      ? BLOG_API.postTime
-      : isCategoryFilterActive
-        ? `${BLOG_API.posts}/${categoryId}`
-        : BLOG_API.posts;
+    if (isChronologyFilterActive) {
+      const response = await fetch(BLOG_API.postTime, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
+        cache,
+      });
 
-    const response = await fetch(requestUrl, {
+      const data = await parseApiJsonResponse<BlogPostsResponse>(response);
+      return normalizeLegacyPostsResponse(data, pageNumber, pageSize);
+    }
+
+    const response = await fetch(BLOG_API.posts, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
+        Accept: '*/*',
       },
-      body: body.toString(),
+      body: JSON.stringify({
+        pageNum: pageNumber,
+        pageSize,
+        status: null,
+        categoryId: isCategoryFilterActive ? categoryId : null,
+        tagId: null,
+        keyword: null,
+      }),
       cache,
     });
 
-    const data: BlogPostsResponse = await response.json();
-
-    return {
-      posts: Array.isArray(data.data) ? data.data : [],
-      pager: data.pager || {
-        total: 0,
-        pageNum: pageNumber,
-        pageSize,
-      },
-    };
+    const data = await parseApiJsonResponse<BlogPostsResponse>(response);
+    return normalizeBlogPostsResponse(data, pageNumber, pageSize);
   } catch (error) {
     console.error('Failed to fetch blog posts:', error);
     return {
@@ -117,6 +150,62 @@ export async function fetchBlogPosts(options: FetchPostsOptions = {}) {
       },
     };
   }
+}
+
+function normalizeLegacyPostsResponse(
+  payload: BlogPostsResponse,
+  pageNumber: number,
+  pageSize: number
+) {
+  return {
+    posts: Array.isArray(payload.data) ? payload.data : [],
+    pager: payload.pager || {
+      total: 0,
+      pageNum: pageNumber,
+      pageSize,
+    },
+  };
+}
+
+function normalizeBlogPostsResponse(
+  payload: BlogPostsResponse,
+  pageNumber: number,
+  pageSize: number
+) {
+  if (Array.isArray(payload.data)) {
+    return normalizeLegacyPostsResponse(payload, pageNumber, pageSize);
+  }
+
+  const list = Array.isArray(payload.data?.list) ? payload.data.list.map(mapRawBlogPostItem) : [];
+
+  return {
+    posts: list,
+    pager: {
+      total: Number(payload.data?.total ?? list.length ?? 0),
+      pageNum: Number(payload.data?.current ?? pageNumber),
+      pageSize: Number(payload.data?.pageSize ?? pageSize),
+    },
+  };
+}
+
+function mapRawBlogPostItem(item: RawBlogPostItem): Post {
+  return {
+    pid: Number(item.pid || 0),
+    id: item.poid || '',
+    title: item.ptitle || '',
+    slug: item.slug || '',
+    category: item.category,
+    template: item.template,
+    status: item.status,
+    author: item.author,
+    body: item.body || '',
+    password: item.password,
+    createdAt: Number(item.createdAt || 0),
+    modifiedAt: item.modifiedAt ? Number(item.modifiedAt) : undefined,
+    plink: item.plink,
+    comment: item.comment,
+    cid: item.cid,
+  };
 }
 
 export async function fetchBlogPostById(id: string, cache: RequestCache = 'no-store') {

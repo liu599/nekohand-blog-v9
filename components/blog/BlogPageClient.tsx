@@ -107,6 +107,7 @@ export default function BlogPageClient({
         <Grid item xs={12} lg={8.5}>
           <BlogPostsPane
             posts={posts}
+            categories={categories}
             loading={postsLoading}
             totalPages={totalPages}
             currentPage={pager.pageNum}
