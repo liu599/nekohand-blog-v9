@@ -43,6 +43,7 @@ export default function BlogSidebar({
   expandedYears,
   chronologyCount,
   onCategoryClick,
+  onCategoryClear,
   onChronologyClick,
   onChronologyClear,
   onYearToggle,
@@ -50,9 +51,24 @@ export default function BlogSidebar({
   return (
     <Card sx={{ position: { lg: 'sticky' }, top: { lg: 96 } }}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Categories
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1 }}>
+          <Typography variant="h6">
+            Categories
+          </Typography>
+          {activeCategory && (
+            <Typography
+              variant="caption"
+              onClick={onCategoryClear}
+              sx={{
+                color: 'text.secondary',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              Clear
+            </Typography>
+          )}
+        </Box>
         <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2 }}>
           {activeCategory ? `Filtered by ${activeCategory.cname}` : `${categories.length} categories`}
         </Typography>
@@ -91,9 +107,24 @@ export default function BlogSidebar({
 
         <Divider sx={{ marginY: 3 }} />
 
-        <Typography variant="h6" gutterBottom>
-          Chronology
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1 }}>
+          <Typography variant="h6">
+            Chronology
+          </Typography>
+          {activeChronology && (
+            <Typography
+              variant="caption"
+              onClick={onChronologyClear}
+              sx={{
+                color: 'text.secondary',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              Clear
+            </Typography>
+          )}
+        </Box>
         <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2 }}>
           {activeChronology
             ? `Filtered by ${formatChronologyLabel(activeChronology)}`
@@ -187,27 +218,6 @@ export default function BlogSidebar({
             );
           })}
         </List>
-
-        {activeChronology && (
-          <Box sx={{ mt: 1.5 }}>
-            <Box
-              onClick={onChronologyClear}
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                px: 1,
-                py: 0.5,
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: 'divider',
-                color: 'text.secondary',
-                cursor: 'pointer',
-              }}
-            >
-              <Typography variant="caption">清除日期筛选</Typography>
-            </Box>
-          </Box>
-        )}
       </CardContent>
     </Card>
   );

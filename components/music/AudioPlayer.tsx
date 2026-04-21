@@ -37,6 +37,7 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
   const [volume, setVolume] = useState(0.6);
   const [muted, setMuted] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [allowExpandedOffHome, setAllowExpandedOffHome] = useState(false);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -51,7 +52,8 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
     setPlaylist,
   } = useMusicStore();
   const currentTrack = current.data;
-  const isForcedMinimized = pathname !== '/' && Boolean(currentTrack);
+  const isRouteMinimized = pathname !== '/' && Boolean(currentTrack) && !allowExpandedOffHome;
+  const isCompactPlayer = minimized || isRouteMinimized;
 
   useEffect(() => {
     if (playlist && playlist.length > 0) {
@@ -78,6 +80,12 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
       audioRef.current.muted = muted;
     }
   }, [muted, volume]);
+
+  useEffect(() => {
+    if (pathname === '/' || !currentTrack) {
+      setAllowExpandedOffHome(false);
+    }
+  }, [currentTrack, pathname]);
 
   const handlePlayPause = () => {
     if (!currentTrack && playlist && playlist.length > 0) {
@@ -146,6 +154,16 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
     }
   };
 
+  const handleExpandPlayer = () => {
+    setMinimized(false);
+    setAllowExpandedOffHome(true);
+  };
+
+  const handleMinimizePlayer = () => {
+    setMinimized(true);
+    setAllowExpandedOffHome(false);
+  };
+
   const formatTime = (time: number) => {
     if (isNaN(time)) return '0:00';
     const minutes = Math.floor(time / 60);
@@ -162,15 +180,15 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
           px: { xs: 1, md: 2 },
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-end',
+          alignItems: isCompactPlayer ? 'flex-end' : 'stretch',
         }}
       >
         <Card
           sx={{
-            width: minimized || isForcedMinimized ? 260 : '100%',
-            maxWidth: '100%',
-            ml: minimized || isForcedMinimized ? 0 : 'auto',
-            mr: minimized ? 'auto' : 'auto',
+            width: isCompactPlayer ? 260 : '100%',
+            maxWidth: isCompactPlayer ? 260 : '100%',
+            ml: isCompactPlayer ? 'auto' : 0,
+            mr: isCompactPlayer ? { xs: 0, md: 2 } : 0,
             overflow: 'hidden',
             pointerEvents: 'auto',
             borderRadius: 3,
@@ -207,7 +225,7 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
           />
 
           <CardContent sx={{ position: 'relative', zIndex: 1 }}>
-            {minimized || isForcedMinimized ? (
+            {isCompactPlayer ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <IconButton onClick={handlePlayPause} size="small" sx={iconSx}>
                   {loading ? <CircularProgress size={16} thickness={5} /> : isPlaying ? <PauseIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
@@ -220,7 +238,7 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
                     {currentTrack?.artist || 'Ready'}
                   </Typography>
                 </Box>
-                <IconButton onClick={() => setMinimized(false)} size="small" sx={iconSx} disabled={isForcedMinimized}>
+                <IconButton onClick={handleExpandPlayer} size="small" sx={iconSx}>
                   <UnfoldMoreIcon fontSize="small" />
                 </IconButton>
               </Box>
@@ -260,7 +278,7 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
                   <Grid item xs={12} md={4.5}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <IconButton onClick={() => setMinimized(true)} sx={iconSx}>
+                        <IconButton onClick={handleMinimizePlayer} sx={iconSx}>
                           <UnfoldLessIcon />
                         </IconButton>
                         <IconButton onClick={prevTrack} sx={iconSx}>
@@ -326,7 +344,7 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
           </CardContent>
         </Card>
 
-        {showPlaylist && !(minimized || isForcedMinimized) && playlist && playlist.length > 0 && (
+        {showPlaylist && !isCompactPlayer && playlist && playlist.length > 0 && (
           <Box
             sx={{
               mb: 1.5,

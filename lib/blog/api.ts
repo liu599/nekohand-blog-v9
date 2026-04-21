@@ -67,17 +67,29 @@ type FetchPostsOptions = {
   cache?: RequestCache;
 };
 
+export async function fetchBlogCategories(cache: RequestCache = 'no-store') {
+  try {
+    const response = await fetch(BLOG_API.postByCategory, {
+      cache,
+      method: 'GET',
+      headers: {
+        Accept: '*/*',
+        'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+      },
+    });
+
+    const payload: BlogCategoriesResponse = await response.json();
+    return payload.code === 20000 && Array.isArray(payload.data) ? payload.data : [];
+  } catch (error) {
+    console.error('Failed to fetch blog categories:', error);
+    return [];
+  }
+}
+
 export async function fetchBlogSidebarData(cache: RequestCache = 'no-store') {
   try {
     const [categoriesResponse, chronologyResponse] = await Promise.all([
-      fetch(BLOG_API.postByCategory, {
-        cache,
-        method: 'GET',
-        headers: {
-          Accept: '*/*',
-          'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
-        },
-      }),
+      fetchBlogCategories(cache),
       fetch(BLOG_API.postChronology, {
         cache,
         method: 'GET',
@@ -88,14 +100,10 @@ export async function fetchBlogSidebarData(cache: RequestCache = 'no-store') {
       }),
     ]);
 
-    const categoriesData: BlogCategoriesResponse = await categoriesResponse.json();
     const chronologyData: BlogChronologyResponse = await chronologyResponse.json();
 
     return {
-      categories:
-        categoriesData.code === 20000 && Array.isArray(categoriesData.data)
-          ? categoriesData.data
-          : [],
+      categories: categoriesResponse,
       chronology:
         chronologyData.code === 20000 && Array.isArray(chronologyData.data)
           ? chronologyData.data
