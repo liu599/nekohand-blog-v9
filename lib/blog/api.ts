@@ -134,6 +134,7 @@ export async function fetchBlogPosts(options: FetchPostsOptions = {}) {
     const isCategoryFilterActive = Boolean(categoryId);
 
     if (isChronologyFilterActive) {
+      const createdDate = mapChronologyFilterToCreatedDate(chronologyFilter ?? '');
       const response = await fetch(BLOG_API.postTime, {
         method: 'POST',
         headers: {
@@ -144,7 +145,7 @@ export async function fetchBlogPosts(options: FetchPostsOptions = {}) {
         body: JSON.stringify({
           pageNum: pageNumber,
           pageSize,
-          createdDate: mapChronologyFilterToCreatedDate(chronologyFilter),
+          createdDate,
         }),
         cache,
       });
