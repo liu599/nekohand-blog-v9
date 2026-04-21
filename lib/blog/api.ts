@@ -39,12 +39,17 @@ type RawBlogPostItem = Partial<{
 type BlogCategoriesResponse = Partial<{
   code: number;
   data: Category[];
+  message: string;
   success: boolean;
 }>;
 
 type BlogChronologyResponse = Partial<{
   code: number;
-  data: string[];
+  data: Array<{
+    month?: string;
+    postCount?: string | number;
+  }>;
+  message: string;
   success: boolean;
 }>;
 
@@ -65,16 +70,38 @@ type FetchPostsOptions = {
 export async function fetchBlogSidebarData(cache: RequestCache = 'no-store') {
   try {
     const [categoriesResponse, chronologyResponse] = await Promise.all([
-      fetch(BLOG_API.postByCategory, { cache }),
-      fetch(BLOG_API.postChronology, { cache }),
+      fetch(BLOG_API.postByCategory, {
+        cache,
+        method: 'GET',
+        headers: {
+          Accept: '*/*',
+          'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        },
+      }),
+      fetch(BLOG_API.postChronology, {
+        cache,
+        method: 'GET',
+        headers: {
+          Accept: '*/*',
+          'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        },
+      }),
     ]);
 
     const categoriesData: BlogCategoriesResponse = await categoriesResponse.json();
     const chronologyData: BlogChronologyResponse = await chronologyResponse.json();
 
     return {
-      categories: Array.isArray(categoriesData.data) ? categoriesData.data : [],
-      chronology: Array.isArray(chronologyData.data) ? chronologyData.data : [],
+      categories:
+        categoriesData.code === 20000 && Array.isArray(categoriesData.data)
+          ? categoriesData.data
+          : [],
+      chronology:
+        chronologyData.code === 20000 && Array.isArray(chronologyData.data)
+          ? chronologyData.data
+              .map((item) => mapMonthlyCountToChronologyValue(item.month, item.postCount))
+              .filter((item): item is string => Boolean(item))
+          : [],
     };
   } catch (error) {
     console.error('Failed to fetch blog sidebar data:', error);
@@ -95,29 +122,27 @@ export async function fetchBlogPosts(options: FetchPostsOptions = {}) {
   } = options;
 
   try {
-    const body = new URLSearchParams();
-    body.set('pageNumber', String(pageNumber));
-    body.set('pageSize', String(pageSize));
-
     const isChronologyFilterActive = Boolean(chronologyFilter);
     const isCategoryFilterActive = Boolean(categoryId);
-
-    if (chronologyFilter) {
-      body.set('t', String(getChronologyTimestamp(chronologyFilter)));
-    }
 
     if (isChronologyFilterActive) {
       const response = await fetch(BLOG_API.postTime, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
+          Accept: '*/*',
+          'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
         },
-        body: body.toString(),
+        body: JSON.stringify({
+          pageNum: pageNumber,
+          pageSize,
+          createdDate: mapChronologyFilterToCreatedDate(chronologyFilter),
+        }),
         cache,
       });
 
       const data = await parseApiJsonResponse<BlogPostsResponse>(response);
-      return normalizeLegacyPostsResponse(data, pageNumber, pageSize);
+      return normalizeBlogPostsResponse(data, pageNumber, pageSize);
     }
 
     const response = await fetch(BLOG_API.posts, {
@@ -355,13 +380,26 @@ function isRawBlogPostItem(value: unknown): value is RawBlogPostItem {
   );
 }
 
-function getChronologyTimestamp(value: string) {
-  const match = value.match(/^(\d{4})(\d{2})/);
-  if (!match) {
-    return 0;
+function mapMonthlyCountToChronologyValue(month?: string, postCount?: string | number) {
+  if (!month) {
+    return null;
   }
 
-  const year = Number(match[1]);
-  const monthIndex = Number(match[2]) - 1;
-  return Math.floor(Date.UTC(year, monthIndex, 1, -8, 0, 0) / 1000);
+  const match = month.match(/^(\d{4})-(\d{2})$/);
+  if (!match) {
+    return null;
+  }
+
+  const [, year, monthNumber] = match;
+  const count = Number(postCount ?? 0);
+  return `${year}${monthNumber}(${Number.isFinite(count) ? count : 0})`;
+}
+
+function mapChronologyFilterToCreatedDate(value: string) {
+  const match = value.match(/^(\d{4})(\d{2})/);
+  if (!match) {
+    return value;
+  }
+
+  return `${match[1]}-${match[2]}`;
 }

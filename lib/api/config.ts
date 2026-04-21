@@ -6,7 +6,6 @@ export const API_CONFIG = {
   playerlist: ['https://mltd.ecs32.top/filelist', 'FORM', 'POST'],
   audio: ['https://mltd.ecs32.top/ecs-music', 'FORM', 'POST'],
   audioInfo: ['https://mltd.ecs32.top/ecs-music', 'FORM', 'POST'],
-  searchInfo: ['https://api.mlwei.com/music/api/wy/?key=523077333&type=lrc&cache=1', 'FORM', 'GET', 'w'],
   createInfo: ['https://mltd.ecs32.top/ecs-music-create', 'FORM', 'POST'],
   artist: {
     'A_PPP': "Poppin'Party",
@@ -23,9 +22,9 @@ export const API_CONFIG = {
 export const BLOG_API = {
   posts: 'https://ws.ecs32.top/hyancie/api/v1/blog/posts/list',
   post: 'https://ws.ecs32.top/hyancie/api/v1/blog/posts',
-  postByCategory: 'https://kasumi.ecs32.top/api/nekohand/v2/frontend/categories',
-  postTime: 'https://kasumi.ecs32.top/api/nekohand/v2/frontend/po/t',
-  postChronology: 'https://kasumi.ecs32.top/api/nekohand/v2/frontend/posts-chronology',
+  postByCategory: 'https://ws.ecs32.top/hyancie/api/v1/blog/categories',
+  postTime: 'https://ws.ecs32.top/hyancie/api/v1/blog/posts/list',
+  postChronology: 'https://ws.ecs32.top/hyancie/api/v1/blog/posts/monthly-count',
   aimiPic: 'https://mltd.ecs32.top/tag.filelist',
   aimiPicTags: 'https://mltd.ecs32.top/tags.get',
   friends: 'https://ws.ecs32.top/hyancie/api/v1/resource/files/friends.json',

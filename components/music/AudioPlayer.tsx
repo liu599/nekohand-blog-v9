@@ -155,13 +155,24 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
 
   return (
     <Box sx={{ position: 'fixed', bottom: { xs: 88, md: 104 }, left: 0, right: 0, zIndex: 1000, pointerEvents: 'none' }}>
-      <Container maxWidth="lg" sx={{ pointerEvents: 'auto', px: { xs: 1, md: 2 } }}>
+      <Container
+        maxWidth="lg"
+        sx={{
+          pointerEvents: 'none',
+          px: { xs: 1, md: 2 },
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+        }}
+      >
         <Card
           sx={{
             width: minimized || isForcedMinimized ? 260 : '100%',
+            maxWidth: '100%',
             ml: minimized || isForcedMinimized ? 0 : 'auto',
             mr: minimized ? 'auto' : 'auto',
             overflow: 'hidden',
+            pointerEvents: 'auto',
             borderRadius: 3,
             border: '1px solid rgba(255,255,255,0.22)',
             background: 'linear-gradient(135deg, rgba(255,255,255,0.34), rgba(255,255,255,0.12))',
@@ -319,6 +330,9 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
           <Box
             sx={{
               mb: 1.5,
+              width: '100%',
+              maxWidth: '100%',
+              pointerEvents: 'auto',
               borderRadius: 3,
               border: '1px solid rgba(255,255,255,0.22)',
               background: 'linear-gradient(135deg, rgba(255,255,255,0.34), rgba(255,255,255,0.12))',
