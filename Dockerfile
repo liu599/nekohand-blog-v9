@@ -34,4 +34,4 @@ COPY --from=builder /app/next.config.js ./next.config.js
 
 EXPOSE 2222
 
-CMD ["pnpm", "start", "--", "-p", "2222", "-H", "0.0.0.0"]
+CMD ["./node_modules/.bin/next", "start", "-p", "2222", "-H", "0.0.0.0"]
