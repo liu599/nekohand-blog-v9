@@ -1,6 +1,6 @@
 {
   "name": "nekohand-blog-v9",
-  "version": "9.0.0",
+  "version": "9.1.0",
   "author": "Tokei <970228409@qq.com>",
   "license": "GPL-3.0-or-later",
   "private": true,
@@ -26,7 +26,9 @@
     "next": "^16.2.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "zustand": "^4.4.7"
+    "zustand": "^4.4.7",
+    "@react-buddy/ide-toolbox-next": "^2.4.1",
+    "@react-buddy/palette-mui": "^5.0.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.202",

@@ -1,0 +1,66 @@
+name: Main Version Bump
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Bump patch version in package.json
+        id: bump
+        shell: bash
+        run: |
+          OLD_VERSION="$(node -p "require('./package.json').version")"
+          NEW_VERSION="$(node - <<'NODE'
+          const fs = require('fs');
+          const path = 'package.json';
+          const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const match = String(pkg.version || '').match(/^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/);
+          if (!match) {
+            throw new Error(`Unsupported package.json version: ${pkg.version}`);
+          }
+
+          const [, major, minor, patch] = match;
+          pkg.version = `${major}.${minor}.${Number(patch) + 1}`;
+          fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');
+          process.stdout.write(pkg.version);
+          NODE
+          )"
+
+          echo "old_version=$OLD_VERSION" >> "$GITHUB_OUTPUT"
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push version bump
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        shell: bash
+        run: |
+          if git diff --quiet -- package.json; then
+            echo "No version change detected."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add package.json
+          git commit -m "chore: bump version to $NEW_VERSION"
+          git push origin HEAD:main
