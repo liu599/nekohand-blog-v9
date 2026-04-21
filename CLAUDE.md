@@ -803,4 +803,9 @@ When in doubt, follow established patterns in the existing codebase.
 - The release branch is used to publish builds. Pushing to `release` or `release/**` triggers the repository workflow that reads `package.json.version` and creates or updates a tag in the form `release-vX.Y.Z`.
 - A repository tag named `release-v1.2.3` is the default release trigger. When cloud build infrastructure watches that tag, it should build and publish the Docker image as version `1.2.3`.
 - If there is also a custom tag named exactly `1.2.3`, that custom rule takes precedence over `release-v1.2.3`.
-- For manual release publishing, first confirm the current `package.json.version`, then create and push `release-v<version>` on the target commit.
+- For manual release publishing, use this exact order:
+- First push the desired code changes to `main`.
+- Then fetch or inspect the latest remote `main` commit, because the version bump workflow may have already advanced `package.json.version`.
+- Read `origin/main:package.json` and use that remote version as the release version.
+- Create a new tag in the form `release-v<version>` on the latest remote `main` commit and push that tag.
+- Do not reuse or move an older release tag when the version has already advanced; publish a new tag such as `release-v9.1.5`.

@@ -145,7 +145,7 @@ export async function fetchBlogPosts(options: FetchPostsOptions = {}) {
         body: JSON.stringify({
           pageNum: pageNumber,
           pageSize,
-          createdDate,
+          createdMonth: createdDate,
         }),
         cache,
       });
@@ -164,7 +164,7 @@ export async function fetchBlogPosts(options: FetchPostsOptions = {}) {
         pageNum: pageNumber,
         pageSize,
         status: null,
-        categoryId: isCategoryFilterActive ? categoryId : null,
+        category: isCategoryFilterActive ? categoryId : null,
         tagId: null,
         keyword: null,
       }),
