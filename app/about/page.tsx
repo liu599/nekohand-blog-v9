@@ -41,13 +41,8 @@ export default function AboutPage() {
         </Typography>
         <Typography component="div">
           <ul>
-            <li>Next.js 16 (App Router)</li>
-            <li>React 19</li>
-            <li>Material UI v5</li>
-            <li>TypeScript</li>
-            <li>Axios for API access and compatibility work</li>
-            <li>Zustand (State Management)</li>
-            <li>pnpm (Package Manager)</li>
+            <li>React 19 + Next.js 16 (App Router)</li>
+            <li>JAVA 23 Spring Boot</li>
           </ul>
         </Typography>
 
@@ -86,13 +81,18 @@ export default function AboutPage() {
               </ul>
             </li>
             <li>
-              <strong>ReactJS</strong>
+              <strong>ReactJS + Golang</strong>
               <ul>
                 <li>2017.11.12 Version 6.0 Poppin&apos; Party with React</li>
                 <li>2018.10.07 Version 7.0 Kasumi with UmiJS</li>
                 <li>2019.09.14 Version 7.2 Kasumi-Symphjoy with React-Symphjoy</li>
                 <li>2020.10.03 Version 7.4 Kasumi-Symphjoy with React-Symphjoy</li>
                 <li>2021.01.03 v8.0.0 UmiJS 3.0 + Material-UI v4</li>
+              </ul>
+            </li>
+            <li>
+              <strong>ReactJS + JAVA SPRING BOOT</strong>
+              <ul>
                 <li>2026.04.05 v9.0.0 Next.js 14 + Material UI v5 complete rewrite</li>
                 <li>2026.04.20 v9.1.0 Next.js 16 + React 19 upgrade with API compatibility updates</li>
               </ul>
@@ -103,12 +103,7 @@ export default function AboutPage() {
         <Typography variant="h6" gutterBottom sx={{ marginTop: 3 }}>
           Author
         </Typography>
-        <Typography paragraph>Tokei</Typography>
-
-        <Typography variant="h6" gutterBottom sx={{ marginTop: 3 }}>
-          License
-        </Typography>
-        <Typography paragraph>GPL-3.0-or-later</Typography>
+        <Typography paragraph>Tokei Liu / liu599</Typography>
       </Box>
     </Box>
   );
